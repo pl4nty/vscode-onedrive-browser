@@ -90,7 +90,7 @@ function pickFolder(
   children.then((children) => {
     const items: FolderPickItem[] = children.value.map((item) => {
       const mtime = new Date(item.lastModifiedDateTime);
-      const desc = `${item.lastModifiedBy.user.displayName} at ${dateFormat.format(mtime)}`;
+      const desc = `${item.lastModifiedBy?.user.displayName || "Unknown"} at ${dateFormat.format(mtime)}`;
       return item.folder
         ? {
             item,
