@@ -1,13 +1,11 @@
 import * as vscode from 'vscode';
 import { OneDriveClient } from './onedrive-types';
 
-const CLIENT_ID = '58b63433-308f-49dd-833c-76175555e44a';
+const CLIENT_ID = '0e4ed61f-18c9-45d4-8da1-d3d11a7a9765';
 
 const SCOPES = [
   `VSCODE_CLIENT_ID:${CLIENT_ID}`,
-  `VSCODE_TENANT:consumers`,
-  'profile',
-  'openid',
+  `VSCODE_TENANT:common`,
   'offline_access',
   'Files.ReadWrite',
 ];
@@ -29,7 +27,7 @@ export class ClientProvider {
   }
 
   private getSession() {
-    this.session ??= vscode.authentication.getSession('microsoft', SCOPES, {
+    this.session = vscode.authentication.getSession('microsoft', SCOPES, {
       createIfNone: true,
     });
 
