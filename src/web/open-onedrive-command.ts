@@ -15,13 +15,12 @@ export async function openOneDrive(clientProvider: ClientProvider) {
   }
 
   if (drive.action === ItemAction.open) {
-    return vscode.commands.executeCommand(
-      'vscode.openFolder',
-      vscode.Uri.from({
+    return vscode.workspace.updateWorkspaceFolders(0, 0, {
+      uri: vscode.Uri.from({
         scheme: OneDriveFileSystemProvider.scheme,
         authority: drive.driveId,
       })
-    );
+    });
   }
 
   const context: Children.DriveItem[] = [];
@@ -51,11 +50,11 @@ export async function openOneDrive(clientProvider: ClientProvider) {
         authority: drive.driveId,
         path: `/${context.map((c) => c.name).join('/')}`,
       });
-
-      return vscode.commands.executeCommand(
-        pick.item.folder ? 'vscode.openFolder' : 'vscode.open',
-        uri
-      );
+      if (pick.item.folder) {
+        return vscode.workspace.updateWorkspaceFolders(0, 0, { uri });
+      } else {
+        return vscode.commands.executeCommand('vscode.open', uri);
+      }
     }
   }
 }
@@ -131,10 +130,21 @@ function pickFolder(
   return new Promise((resolve) => {
     qp.onDidTriggerItemButton((e) => {
       resolve({ item: e.item.item, action: ItemAction.open });
+      qp.hide();
     });
     qp.onDidAccept(() => {
       const selected = qp.selectedItems[0];
-      resolve(selected ? { item: selected.item, action: ItemAction.browse } : undefined);
+      const item = selected?.item;
+      if (selected) {
+        if (item === 'parent' || item.folder) {
+          resolve({ item, action: ItemAction.browse });
+        } else {
+          resolve({ item, action: ItemAction.open });
+          qp.hide();
+        }
+      } else {
+        resolve(undefined);
+      }
     });
     qp.onDidHide(() => {
       resolve(undefined);
